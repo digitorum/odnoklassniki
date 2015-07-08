@@ -1,0 +1,55 @@
+﻿<?php
+	
+	$ok = new Social_APIClient_Odnoklassniki(
+		array(
+			'client_id' => '1....8',
+			'application_key' => 'C.....A',
+			'client_secret' => '7........7'
+		)
+	);
+	
+	// закомментировать для получения нового
+	$token = '{"token_type":"session","refresh_token":"b...3","access_token":"7...9","expires":1374053503}';
+	
+	if($token) {
+		$ok->setToken($token);
+		//$ok->refreshToken();
+	} else {
+		$ok->setRedirectUrl('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+		if(isset($_GET['code'])) {
+			$ok->getToken($_GET['code']);
+			//print $ok->getTokenStr();
+		} else {
+			print '<a href="' . $ok->getLoginUrl(array('VALUABLE ACCESS', 'SET STATUS')) . '">Login!</a>';
+			exit();
+		}
+	}
+	
+	// получение UID текущего пользователя
+	// получение групп пользователя
+	// получение количества членов группы
+	$data = $ok->api('users.getCurrentUser');
+	$uid = $data['uid'];
+	$data = $ok->api('group.getUserGroupsV2');
+	$groupId = $data['groups'][0]['groupId'];
+	$data = $ok->api('group.getMembers', array('uid' => $groupId));
+	print_r($data);
+	
+	// обновление статуса
+	$data = $ok->api(
+		'users.setStatus', 
+		array(
+			'status' => 'Тестовый статус (APPLICATION)', 
+		)
+	);
+	print_r($data);
+	
+	// получение данных пользователя
+	$data = $ok->api(
+		'users.getInfo', 
+		array(
+			'uids' => '5xxx0',
+			'fields' => 'uid,first_name,last_name,name'
+		)
+	);
+	print_r($data);
